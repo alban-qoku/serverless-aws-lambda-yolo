@@ -1,86 +1,46 @@
-const Multipart = require("lambda-multipart");
 const AWS = require("aws-sdk");
-const s3 = new AWS.S3();
+
+const s3 = new AWS.S3({
+  accessKeyId: process.env.aws_access_key,
+  secretAccessKey: process.env.aws_secret_key,
+  signatureVersion: 'v4',
+});
 const uuidv4 = require("uuid/v4");
 const { responseData } = require("../utils");
 
-module.exports.handler = async (event, context) => {
-  const { fields, files } = await parseMultipartFormData(event);
+module.exports.get_presign_url_handler = async (event, context) => {
+  const data = JSON.parse(event.body);
+  const ext = (/[.]/.exec(data.filename)) ? /[^.]+$/.exec(data.filename) : "";
 
-  if (files == null || files.length == 0) {
-    // no file found in http request
-    return responseData(400, {
-      message: "File not exist",
+  if (data.contentType !== "video/mp4") {
+    responseData(400, {
+      "message": `Unsupported extension type "${ext}".`
     });
   }
 
-  try {
-    const data = await uploadFileIntoS3(files[0]);
-    return responseData(201, data);
-  } catch (error) {
-    return responseData(400, error);
-  }
-};
-
-const parseMultipartFormData = async event => {
-  return new Promise((resolve, reject) => {
-    const parser = new Multipart(event);
-
-    parser.on("finish", result => {
-      resolve({ fields: result.fields, files: result.files });
-    });
-
-    parser.on("error", error => {
-      return reject(error);
-    });
-  });
-};
-
-const uploadFileIntoS3 = async file => {
-
-  const headers = file["headers"];
-  if (headers == null) {
-    return new Promise((resolve, reject) => {
-      return reject({
-        "message": `Missing "headers" from request`
-      });
-    });
-  }
-
-  const contentType = headers["content-type"];
-
-  if (contentType !== "video/mp4") {
-    return new Promise((resolve, reject) => {
-      return reject({
-        "message": `Unsupported content type "${contentType}".`
-      });
-    });
-  }
-
-  const ext = "mp4";
-
-  const options = {
+  const key = uuidv4();
+  const params = {
     Bucket: process.env.file_s3_bucket_name,
-    Key: `${uuidv4()}.${ext}`,
-    Body: file
+    Key: `${key}.${ext}`,
+    Expires: 36000
   };
 
-  try {
-    await s3.upload(options).promise();
-    console.log(
-      `File uploaded into S3 bucket: "${process.env.file_s3_bucket_name
-      }", with key: "${options.Key}"`
-    );
-    return new Promise((resolve, reject) => {
-      return resolve({
-        data: options
+  const presigned_url = await getPublicUrl(params);
+
+  return responseData(200, {
+    key: `${key}.${ext}`,
+    presigned_url: presigned_url
+  });
+}
+
+const getPublicUrl = params => {
+  return new Promise((resolve, reject) => {
+      s3.getSignedUrl('putObject', params, (error, url) => {
+          if (error) {
+              reject(error);
+          } else {
+              resolve(url);
+          }
       });
-    });
-  } catch (err) {
-    return new Promise((resolve, reject) => {
-      return reject({
-        "message": err
-      });
-    });
-  }
-};
+  });
+}

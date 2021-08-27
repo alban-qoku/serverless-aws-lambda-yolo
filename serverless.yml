@@ -13,6 +13,8 @@ provider:
     REGION: ${file(./config.json):REGION}
     S3_UPLOADS_BUCKET_NAME: ${file(./config.json):S3_UPLOADS_BUCKET_NAME}
     S3_KEYFRAME_BUCKET_NAME: ${file(./config.json):S3_KEYFRAME_BUCKET_NAME}
+    LAMBDA_AWS_ACCESS_KEY: ${file(./config.json):AWS_ACCESS_KEY}
+    LAMBDA_AWS_SECRET_KEY: ${file(./config.json):AWS_SECRET_KEY}
 
   iamRoleStatements:
     - Effect: "Allow"
@@ -29,10 +31,12 @@ provider:
         - "arn:aws:s3:::${self:provider.environment.S3_KEYFRAME_BUCKET_NAME}"
 
 functions:
-  file-upload:
-    handler: handlers/upload.handler
+  get-presign-url:
+    handler: handlers/upload.get_presign_url_handler
     environment:
       file_s3_bucket_name: ${self:provider.environment.S3_UPLOADS_BUCKET_NAME}
+      aws_access_key: ${self:provider.environment.LAMBDA_AWS_ACCESS_KEY}
+      aws_secret_key: ${self:provider.environment.LAMBDA_AWS_SECRET_KEY}
     events:
       - http:
           path: upload
