@@ -59,6 +59,11 @@ functions:
     handler: handlers/list.get_keyframe_list_handler
     environment:
       keyframe_s3_bucket_name: ${self:provider.environment.S3_KEYFRAME_BUCKET_NAME}
+      region: ${self:provider.environment.REGION}
+      hostname: ${self:provider.environment.HOSTNAME}
+      username: ${self:provider.environment.USERNAME}
+      database: ${self:provider.environment.DATABASE}
+      password: ${self:provider.environment.PASSWORD}
     events:
       - http:
           path: list/{key}
