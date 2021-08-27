@@ -15,6 +15,10 @@ provider:
     S3_KEYFRAME_BUCKET_NAME: ${file(./config.json):S3_KEYFRAME_BUCKET_NAME}
     LAMBDA_AWS_ACCESS_KEY: ${file(./config.json):AWS_ACCESS_KEY}
     LAMBDA_AWS_SECRET_KEY: ${file(./config.json):AWS_SECRET_KEY}
+    HOSTNAME: ${file(./config.json):POSTGRE_HOSTNAME}
+    USERNAME: ${file(./config.json):POSTGRE_USERNAME}
+    DATABASE: ${file(./config.json):POSTGRE_DATABASE}
+    PASSWORD: ${file(./config.json):POSTGRE_PASSWORD}
 
   iamRoleStatements:
     - Effect: "Allow"
@@ -78,6 +82,13 @@ functions:
     handler: handlers/detect.handler
     environment:
       keyframe_s3_bucket_name: ${self:provider.environment.S3_KEYFRAME_BUCKET_NAME}
+      aws_access_key: ${self:provider.environment.LAMBDA_AWS_ACCESS_KEY}
+      aws_secret_key: ${self:provider.environment.LAMBDA_AWS_SECRET_KEY}
+      region: ${self:provider.environment.REGION}
+      hostname: ${self:provider.environment.HOSTNAME}
+      username: ${self:provider.environment.USERNAME}
+      database: ${self:provider.environment.DATABASE}
+      password: ${self:provider.environment.PASSWORD}
     events:
       - s3:
           bucket: ${self:provider.environment.S3_KEYFRAME_BUCKET_NAME}
