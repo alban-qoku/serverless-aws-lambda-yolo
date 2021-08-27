@@ -1,0 +1,7 @@
+{
+    "REGION": "us-east-1",
+    "S3_UPLOADS_BUCKET_NAME": "upload-video-process",
+    "S3_KEYFRAME_BUCKET_NAME": "upload-video-keyframe",
+    "AWS_ACCESS_KEY": "xxxxx",
+    "AWS_SECRET_KEY": "xxxxx"
+}
