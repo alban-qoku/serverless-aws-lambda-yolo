@@ -14,7 +14,6 @@
   },
   "dependencies": {
     "lambda-multipart": "^1.0.2",
-    "middy": "^0.36.0",
     "request": "^2.88.2",
     "uuid": "^3.3.2"
   }

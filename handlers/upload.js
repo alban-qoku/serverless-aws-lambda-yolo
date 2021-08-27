@@ -3,7 +3,7 @@ const AWS = require("aws-sdk");
 const s3 = new AWS.S3({
   accessKeyId: process.env.aws_access_key,
   secretAccessKey: process.env.aws_secret_key,
-  signatureVersion: 'v4',
+  signatureVersion: 'v4'
 });
 const uuidv4 = require("uuid/v4");
 const { responseData } = require("../utils");
@@ -13,7 +13,7 @@ module.exports.get_presign_url_handler = async (event, context) => {
   const ext = (/[.]/.exec(data.filename)) ? /[^.]+$/.exec(data.filename) : "";
 
   if (data.contentType !== "video/mp4") {
-    responseData(400, {
+    return responseData(400, {
       "message": `Unsupported extension type "${ext}".`
     });
   }
