@@ -7,12 +7,13 @@ const s3 = new AWS.S3({
 });
 const uuidv4 = require("uuid/v4");
 const { responseData } = require("../utils");
+const contentTypes = ["video/mp4", "video/quicktime"];
 
 module.exports.get_presign_url_handler = async (event, context) => {
   const data = JSON.parse(event.body);
   const ext = (/[.]/.exec(data.filename)) ? /[^.]+$/.exec(data.filename) : "";
 
-  if (data.contentType !== "video/mp4") {
+  if (!contentTypes.includes(data.contentType)) {
     return responseData(400, {
       "message": `Unsupported extension type "${ext}".`
     });
